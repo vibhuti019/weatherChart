@@ -240,12 +240,7 @@ img{
     }
 
 
-    //Checks Which Button Is Been Pressed
-    function checkButton(e){
-        if (e.keyCode === 13) {  //checks whether the pressed key is "Enter"
-            callCountryApi(e)
-        }
-    }
+    
 </script>	
 </head>
 <body>
@@ -253,7 +248,7 @@ img{
 <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 <div style="width: 100%;display: grid;align-items: center;">
     <div style="width:50%;margin-left: 25%;border-radius: 25px;border: 1px solid black;" id="search">
-        <input style="all: none;border: none;width: 90%;margin: 1%;padding: 1%;" placeholder="Country" id="inputCountry" type="text" onkeypress="checkButton()">
+        <input style="all: none;border: none;width: 90%;margin: 1%;padding: 1%;" placeholder="Country" id="inputCountry" type="text">
         <span id="submit" onclick="callCountryApi">&#x1F50D;</span>
     </div>
     <span id="countryName" style="font-size: 50px;text-align: center;margin-bottom: 2%;">India</span>

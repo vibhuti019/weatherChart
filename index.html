@@ -7,9 +7,12 @@ img{
 }
 </style>
 <script>
+    //API Key
+    APIKEY = "fa7fd933bde54495be6f92c67cba16a4"
+    
 
 
-    //Data Formatter
+    //Data Formatter (Controls How Data Will Be Shown On The Chart)
     returnData = true
     function formatter(e) { 
         if(toggleWeekly){
@@ -31,112 +34,10 @@ img{
         }
     }
 
-    
-    //The Function Which Renders Chart
-    function chartShow(){
-        
-        
-        var chart = new CanvasJS.Chart("chartContainer", DataArray)
-        chart.render() 
-        
-        var images = []
-
-        addImages(chart)
-
-
-        //Adds Images To The Chart
-        function addImages(chart) {
-            for(var i = 0;i < chart.data[0].dataPoints.length;i++){
-                var dpsName = chart.data[0].dataPoints[i].name
-                images.push($("<img>").attr("src", "https://openweathermap.org/img/wn/"+chart.data[0].dataPoints[i].icon+"@2x.png"))
-                images[i].attr("class", dpsName).appendTo($("#chartContainer>.canvasjs-chart-container"))
-                positionImage(images[i], i)
-            }
-        }
-
-
-        //Position The Image At The Specific Location
-        function positionImage(image, index) {
-            var imageCenter = chart.axisX[0].convertValueToPixel(chart.data[0].dataPoints[index].x)
-            var imageTop =  chart.axisY[0].convertValueToPixel(chart.axisY[0].maximum)
-
-            image.width("30px")
-            .css({ "left": imageCenter - 20 + "px",
-            "position": "absolute","top":imageTop + "px",
-            "position": "absolute"})
-        }
-
-    }
 
 
 
-    //Change Hourly/Daily Chart
-    var toggleWeekly = true
-    function changeDataChart(){
-        if(toggleWeekly){
-            DataArray.data[0].dataPoints = HourlyData
-            DataArray.title.text = "Hourly Weather Forecast"
-            DataArray.toolTip.content = "{name} </br> <strong>Temperature: </strong>  {y[0]} °C"
-            toggleWeekly = false        
-        }
-        else{
-            DataArray.data[0].dataPoints = DailyData
-            DataArray.title.text = "Weekly Weather Forecast"
-            DataArray.toolTip.content = "{name} </br> <strong>Temperature: </strong> </br> Min: {y[0]} °C, Max: {y[1]} °C"
-            toggleWeekly = true
-        }
-        chartShow()
-    }
-
-
-
-    //Apis Called Here
-    var urlForApi = "https://api.openweathermap.org/data/2.5/onecall?lat=25.32234&lon=82.98740&units=metric&exclude=minutely,current&appid=2cafb077635ccded1693ce910558142f"
-    function callApis(){
-        var hello = 1
-        var xhttp = new XMLHttpRequest()
-        xhttp.onreadystatechange = function() {
-            updateData(JSON.parse(xhttp.responseText))
-        }
-        xhttp.open("GET", urlForApi , true)
-        xhttp.send()
-    }
-
-    //Update The Data In The Array 
-    function updateData(JSONData){
-        for(i=0; i<24; i++){
-
-            readableDate = new Date( JSONData.hourly[i].dt * 1000)
-            readableDate = readableDate.toTimeString()
-            HourlyData[i].label = readableDate.substr(0,5) 
-            HourlyData[i].name = JSONData.hourly[i].weather[0].main
-            HourlyData[i].icon = JSONData.hourly[i].weather[0].icon
-            HourlyData[i].y[0] = HourlyData[i].y[1]  =  JSONData.hourly[i].temp 
-        }
-        for(i=0; i<7; i++){
-            readableDate = new Date( JSONData.daily[i].dt * 1000)
-            readableDate = readableDate.toDateString()
-            DailyData[i].label = readableDate.substr(0,11) 
-            DailyData[i].name = JSONData.daily[i].weather[0].main
-            DailyData[i].icon = JSONData.daily[i].weather[0].icon
-            DailyData[i].y[0] =  JSONData.daily[i].temp.min
-            DailyData[i].y[1]  =  JSONData.daily[i].temp.max 
-        }
-        chartShow()
-    }
-
-
-    
-
-
-    //Run When The Window Loads
-    window.onload = function () {
-        callApis()
-        changeDataChart()
-    }
-
-
-
+    //Initializations
     //The Hourly Data To Be Shown Is Here
     HourlyData = [
 			{ label: "12:00 am", y: [10, 26], name: "rainy", icon:"010"  },
@@ -165,7 +66,6 @@ img{
             { label: "12:00 pm", y: [15, 27], name: "rainy" , icon: "010"}
         ]
 
-
     //The Daily Data To Be Shown Is Stored Here
     DailyData = [
 			{ label: "Monday", y: [10, 26], name: "rainy" , icon: "010" },
@@ -177,6 +77,8 @@ img{
 			{ label: "07:00 am", y: [15, 27], name: "cloudy" , icon: "010"}
 		]
 
+
+    //The Store Array stores All The Values That Will Be Used In The Chart 
     DataArray = {  
 
             title:{
@@ -227,22 +129,175 @@ img{
             }]
         }
 
+    
+
+
+
+
+    //The Chart Working
+    //The Function Which Renders Chart
+    function chartShow(){
+        
+        var chart = new CanvasJS.Chart("chartContainer", DataArray) //Initialize Chart
+        chart.render() // Renders Chart
+        
+        var images = []
+ 
+        addImages(chart)
+
+
+        //Adds Images To The Chart
+        function addImages(chart) {
+            for(var i = 0;i < chart.data[0].dataPoints.length;i++){
+                var dpsName = chart.data[0].dataPoints[i].name
+                images.push($("<img>").attr("src", "https://openweathermap.org/img/wn/"+chart.data[0].dataPoints[i].icon+"@2x.png"))
+                images[i].attr("class", dpsName).appendTo($("#chartContainer>.canvasjs-chart-container"))
+                positionImage(images[i], i)
+            }
+        }
+
+
+        //Position The Image At The Specific Location
+        function positionImage(image, index) {
+            var imageCenter = chart.axisX[0].convertValueToPixel(chart.data[0].dataPoints[index].x)
+            var imageTop =  chart.axisY[0].convertValueToPixel(chart.axisY[0].maximum)
+
+            image.width("30px")
+            .css({ "left": imageCenter - 20 + "px",
+            "position": "absolute","top":imageTop + "px",
+            "position": "absolute"})
+        }
+
+    }
+
+
+    //Change Hourly/Daily Chart 
+    var toggleWeekly = true
+    function changeDataChart(){
+        if(toggleWeekly){
+            DataArray.data[0].dataPoints = HourlyData
+            DataArray.title.text = "Hourly Weather Forecast"
+            DataArray.toolTip.content = "{name} </br> <strong>Temperature: </strong>  {y[0]} °C"
+            toggleWeekly = false        
+        }
+        else{
+            DataArray.data[0].dataPoints = DailyData
+            DataArray.title.text = "Weekly Weather Forecast"
+            DataArray.toolTip.content = "{name} </br> <strong>Temperature: </strong> </br> Min: {y[0]} °C, Max: {y[1]} °C"
+            toggleWeekly = true
+        }
+        chartShow()
+    }
+
+
+
+
+
+
+
+
+    //Apis Called Here
+    var urlForApi = "https://api.openweathermap.org/data/2.5/onecall?lat=25.32234&lon=82.98740&units=metric&exclude=minutely,current&appid="+APIKEY
+    function callApis(){
+        var xhttp = new XMLHttpRequest()
+        xhttp.onreadystatechange = function() {
+            updateData(JSON.parse(xhttp.responseText))
+        }
+        xhttp.open("GET", urlForApi , true)
+        xhttp.send()
+    }
+
+    //Update The Data In The Array 
+    function updateData(JSONData){
+        for(i=0; i<24; i++){
+
+            readableDate = new Date( JSONData.hourly[i].dt * 1000)
+            readableDate = readableDate.toTimeString()
+            HourlyData[i].label = readableDate.substr(0,5) 
+            HourlyData[i].name = JSONData.hourly[i].weather[0].main
+            HourlyData[i].icon = JSONData.hourly[i].weather[0].icon
+            HourlyData[i].y[0] = HourlyData[i].y[1]  =  JSONData.hourly[i].temp 
+        }
+        for(i=0; i<7; i++){
+            readableDate = new Date( JSONData.daily[i].dt * 1000)
+            readableDate = readableDate.toDateString()
+            DailyData[i].label = readableDate.substr(0,11) 
+            DailyData[i].name = JSONData.daily[i].weather[0].main
+            DailyData[i].icon = JSONData.daily[i].weather[0].icon
+            DailyData[i].y[0] =  JSONData.daily[i].temp.min
+            DailyData[i].y[1]  =  JSONData.daily[i].temp.max 
+        }
+        chartShow()
+    }
+
+
+
+
+    
+
+    
+    //Run When The Window Loads
+    window.onload = function () {
+        getLocation()
+        changeDataChart()
+    }
+
+
+    
+    
+    
+    
+    //Get Location On Visiting Page
+    function getLocation() {
+        if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(getCityAndCountryName,callApis)
+        } else {
+            alert("Geolocation is not supported by this browser.")
+            callApis()
+        }
+    }
+
+
+    //Change Url When User Vists The Page
+    function getCityAndCountryName(position) {
+        console.log(position)
+
+        urlForCityApi = "https://geocode.xyz/"+position.coords.latitude+","+position.coords.longitude+"?geoit=json"
+        urlForApi = "https://api.openweathermap.org/data/2.5/onecall?lat="+position.coords.latitude+"&lon="+position.coords.longitude+"&units=metric&exclude=minutely,current&appid="+APIKEY
+        
+        var xhttp = new XMLHttpRequest()
+        xhttp.onreadystatechange = function() {
+            updateDetails(JSON.parse(xhttp.responseText))
+        }
+        xhttp.open("GET", urlForCityApi, true)
+        xhttp.send()
+    }
+
+    //Update Page Heading
+    function updateDetails(JSONData){
+        document.getElementById("cityName").textContent = JSONData.city + ", " + JSONData.country
+        callApis()
+    }
+
+
+
+
 
     //City Details
     function callCityApi(){
-        cityName = document.getElementById("inputCity").value
-        var xhttp = new XMLHttpRequest()
-        xhttp.onreadystatechange = function() {
-            checkDetails(JSON.parse(xhttp.responseText))
+            cityName = document.getElementById("inputCity").value
+            var xhttp = new XMLHttpRequest()
+            xhttp.onreadystatechange = function() {
+                checkDetails(JSON.parse(xhttp.responseText))
+            }
+            xhttp.open("GET", "https://geocode.xyz/"+ cityName +"?json=1", true)
+            xhttp.send()
         }
-        xhttp.open("GET", "https://geocode.xyz/"+ cityName +"?json=1", true)
-        xhttp.send()
-    }
 
     //Check City Details And Update URL
     function checkDetails(JSONData){
         try{
-            urlForApi = "https://api.openweathermap.org/data/2.5/onecall?lat="+JSONData.latt+"&lon="+JSONData.longt+"&units=metric&exclude=minutely,current&appid=2cafb077635ccded1693ce910558142f"
+            urlForApi = "https://api.openweathermap.org/data/2.5/onecall?lat="+JSONData.latt+"&lon="+JSONData.longt+"&units=metric&exclude=minutely,current&appid="+APIKEY
             document.getElementById("cityName").textContent = JSONData.standard.city + ", " + JSONData.standard.countryname
             callApis()
         }
@@ -254,8 +309,7 @@ img{
         }
     }
     
-
-
+   
 </script>	
 </head>
 <body>

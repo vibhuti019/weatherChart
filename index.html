@@ -132,7 +132,7 @@ img{
     window.onload = function () {
         callApis()
         changeDataChart()
-        setInterval(callApis, 5000)
+        setInterval(callApis, 500000)
     }
 
 
@@ -233,7 +233,7 @@ img{
         alert("helllo")
         var xhttp = new XMLHttpRequest()
         xhttp.onreadystatechange = function() {
-            console.log(e)
+            console.log(xhttp.responseText)
         }
         xhttp.open("GET", "https://restcountries.eu/rest/v2/name/"+ countryName +"?fullText=true&fields=latlng", true)
         xhttp.send()

@@ -35,8 +35,7 @@ img{
     //The Function Which Renders Chart
     function chartShow(){
         
-        callApis()
-
+        
         var chart = new CanvasJS.Chart("chartContainer", DataArray)
         chart.render() 
         
@@ -92,12 +91,14 @@ img{
 
 
     //Apis Called Here
+    var urlForApi = "https://api.openweathermap.org/data/2.5/onecall?lat=25.32234&lon=82.98740&units=metric&exclude=minutely,current&appid=2cafb077635ccded1693ce910558142f"
     function callApis(){
+        var hello = 1
         var xhttp = new XMLHttpRequest()
         xhttp.onreadystatechange = function() {
             updateData(JSON.parse(xhttp.responseText))
         }
-        xhttp.open("GET", "https://api.openweathermap.org/data/2.5/onecall?lat=33.441792&lon=-94.037689&units=metric&exclude=minutely,current&appid=c5a76b9ccccf621e1e829563697ce2f1", true)
+        xhttp.open("GET", urlForApi , true)
         xhttp.send()
     }
 
@@ -132,7 +133,6 @@ img{
     window.onload = function () {
         callApis()
         changeDataChart()
-        setInterval(callApis, 500000)
     }
 
 
@@ -228,19 +228,34 @@ img{
         }
 
 
-    //CountryDetails
-    function callCountryApi(e){
-        alert("helllo")
+    //City Details
+    function callCityApi(){
+        cityName = document.getElementById("inputCity").value
         var xhttp = new XMLHttpRequest()
         xhttp.onreadystatechange = function() {
-            console.log(xhttp.responseText)
+            checkDetails(JSON.parse(xhttp.responseText))
         }
-        xhttp.open("GET", "https://restcountries.eu/rest/v2/name/"+ countryName +"?fullText=true&fields=latlng", true)
+        xhttp.open("GET", "https://geocode.xyz/"+ cityName +"?json=1", true)
         xhttp.send()
     }
 
-
+    //Check City Details And Update URL
+    function checkDetails(JSONData){
+        try{
+            urlForApi = "https://api.openweathermap.org/data/2.5/onecall?lat="+JSONData.latt+"&lon="+JSONData.longt+"&units=metric&exclude=minutely,current&appid=2cafb077635ccded1693ce910558142f"
+            document.getElementById("cityName").textContent = JSONData.standard.city + ", " + JSONData.standard.countryname
+            callApis()
+        }
+        catch(err){
+            if(JSONData.error.description == "Your request produced no suggestions."){
+                alert("Check City Name")
+            }
+            console.log(err)
+        }
+    }
     
+
+
 </script>	
 </head>
 <body>
@@ -248,10 +263,10 @@ img{
 <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 <div style="width: 100%;display: grid;align-items: center;">
     <div style="width:50%;margin-left: 25%;border-radius: 25px;border: 1px solid black;" id="search">
-        <input style="all: none;border: none;width: 90%;margin: 1%;padding: 1%;" placeholder="Country" id="inputCountry" type="text">
-        <span id="submit" onclick="callCountryApi">&#x1F50D;</span>
+        <input style="all: none;border: none;width: 90%;margin: 1%;padding: 1%;" placeholder="Enter City" id="inputCity" type="text">
+        <span id="submit" onclick="callCityApi()">&#x1F50D;</span>
     </div>
-    <span id="countryName" style="font-size: 50px;text-align: center;margin-bottom: 2%;">India</span>
+    <span id="cityName" style="font-size: 50px;text-align: center;margin-bottom: 2%;">Varanasi, India</span>
     </br>
 </div>
 

@@ -250,10 +250,10 @@ img{
     //Get Location On Visiting Page
     function getLocation() {
         if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(getCityAndCountryName,callApis)
+                navigator.geolocation.getCurrentPosition(getCityAndCountryName,callCityApi)
         } else {
             alert("Geolocation is not supported by this browser.")
-            callApis()
+            callCityApi()
         }
     }
 
@@ -286,6 +286,9 @@ img{
     //City Details
     function callCityApi(){
             cityName = document.getElementById("inputCity").value
+            if(cityName == ""){
+                cityName = "Varanasi"
+            }
             var xhttp = new XMLHttpRequest()
             xhttp.onreadystatechange = function() {
                 checkDetails(JSON.parse(xhttp.responseText))
@@ -320,7 +323,7 @@ img{
         <input style="all: none;border: none;width: 90%;margin: 1%;padding: 1%;" placeholder="Enter City" id="inputCity" type="text">
         <span id="submit" onclick="callCityApi()">&#x1F50D;</span>
     </div>
-    <span id="cityName" style="font-size: 50px;text-align: center;margin-bottom: 2%;">Varanasi, India</span>
+    <span id="cityName" style="font-size: 50px;text-align: center;margin-bottom: 2%;">Working....</span>
     </br>
 </div>
 

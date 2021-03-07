@@ -1,0 +1,266 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+img{
+	pointer-events: none
+}
+</style>
+<script>
+
+
+    //Data Formatter
+    returnData = true
+    function formatter(e) { 
+        if(toggleWeekly){
+            if(e.index === 0 && e.dataPoint.x === 0) {
+                return " Min " + e.dataPoint.y[e.index] + "°"
+            } else if(e.index == 1 && e.dataPoint.x === 0) {
+                return " Max " + e.dataPoint.y[e.index] + "°"
+            } else{
+                return e.dataPoint.y[e.index] + "°"
+            }
+        }
+        else{
+            if(e.index === 1){
+               return e.dataPoint.y[e.index] + "°"
+            }
+            else{
+                return " "
+            }
+        }
+    }
+
+    
+    //The Function Which Renders Chart
+    function chartShow(){
+        
+        callApis()
+
+        var chart = new CanvasJS.Chart("chartContainer", DataArray)
+        chart.render() 
+        
+        var images = []
+
+        addImages(chart)
+
+
+        //Adds Images To The Chart
+        function addImages(chart) {
+            for(var i = 0;i < chart.data[0].dataPoints.length;i++){
+                var dpsName = chart.data[0].dataPoints[i].name
+                images.push($("<img>").attr("src", "https://openweathermap.org/img/wn/"+chart.data[0].dataPoints[i].icon+"@2x.png"))
+                images[i].attr("class", dpsName).appendTo($("#chartContainer>.canvasjs-chart-container"))
+                positionImage(images[i], i)
+            }
+        }
+
+
+        //Position The Image At The Specific Location
+        function positionImage(image, index) {
+            var imageCenter = chart.axisX[0].convertValueToPixel(chart.data[0].dataPoints[index].x)
+            var imageTop =  chart.axisY[0].convertValueToPixel(chart.axisY[0].maximum)
+
+            image.width("30px")
+            .css({ "left": imageCenter - 20 + "px",
+            "position": "absolute","top":imageTop + "px",
+            "position": "absolute"})
+        }
+
+    }
+
+
+
+    //Change Hourly/Daily Chart
+    var toggleWeekly = true
+    function changeDataChart(){
+        if(toggleWeekly){
+            DataArray.data[0].dataPoints = HourlyData
+            DataArray.title.text = "Hourly Weather Forecast"
+            DataArray.toolTip.content = "{name} </br> <strong>Temperature: </strong>  {y[0]} °C"
+            toggleWeekly = false        
+        }
+        else{
+            DataArray.data[0].dataPoints = DailyData
+            DataArray.title.text = "Weekly Weather Forecast"
+            DataArray.toolTip.content = "{name} </br> <strong>Temperature: </strong> </br> Min: {y[0]} °C, Max: {y[1]} °C"
+            toggleWeekly = true
+        }
+        chartShow()
+    }
+
+
+
+    //Apis Called Here
+    function callApis(){
+        var xhttp = new XMLHttpRequest()
+        xhttp.onreadystatechange = function() {
+            updateData(JSON.parse(xhttp.responseText))
+        }
+        xhttp.open("GET", "https://api.openweathermap.org/data/2.5/onecall?lat=33.441792&lon=-94.037689&units=metric&exclude=minutely,current&appid=c5a76b9ccccf621e1e829563697ce2f1", true)
+        xhttp.send()
+    }
+
+    //Update The Data In The Array 
+    function updateData(JSONData){
+        for(i=0; i<24; i++){
+
+            readableDate = new Date( JSONData.hourly[i].dt * 1000)
+            readableDate = readableDate.toTimeString()
+            HourlyData[i].label = readableDate.substr(0,5) 
+            HourlyData[i].name = JSONData.hourly[i].weather[0].main
+            HourlyData[i].icon = JSONData.hourly[i].weather[0].icon
+            HourlyData[i].y[0] = HourlyData[i].y[1]  =  JSONData.hourly[i].temp 
+        }
+        for(i=0; i<7; i++){
+            readableDate = new Date( JSONData.daily[i].dt * 1000)
+            readableDate = readableDate.toDateString()
+            DailyData[i].label = readableDate.substr(0,11) 
+            DailyData[i].name = JSONData.daily[i].weather[0].main
+            DailyData[i].icon = JSONData.daily[i].weather[0].icon
+            DailyData[i].y[0] =  JSONData.daily[i].temp.min
+            DailyData[i].y[1]  =  JSONData.daily[i].temp.max 
+        }
+        chartShow()
+    }
+
+
+    
+
+
+    //Run When The Window Loads
+    window.onload = function () {
+        callApis()
+        changeDataChart()
+        setInterval(callApis, 5000)
+    }
+
+
+
+    //The Hourly Data To Be Shown Is Here
+    HourlyData = [
+			{ label: "12:00 am", y: [10, 26], name: "rainy", icon:"010"  },
+			{ label: "01:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+			{ label: "02:00 am", y: [15, 27], name: "cloudy" , icon: "010" },
+			{ label: "03:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+			{ label: "04:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "05:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+			{ label: "07:00 am", y: [15, 27], name: "cloudy" , icon: "010" },
+			{ label: "08:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "09:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "10:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "11:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "12:00 pm", y: [10, 26], name: "rainy" , icon: "010" },
+			{ label: "01:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "02:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "03:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "04:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "05:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "07:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "08:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "09:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "10:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "11:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "12:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+            { label: "12:00 pm", y: [15, 27], name: "rainy" , icon: "010"}
+        ]
+
+
+    //The Daily Data To Be Shown Is Stored Here
+    DailyData = [
+			{ label: "Monday", y: [10, 26], name: "rainy" , icon: "010" },
+			{ label: "Tuesday", y: [15, 27], name: "sunny" , icon: "010" },
+			{ label: "02:00 am", y: [15, 27], name: "cloudy" , icon: "010" },
+			{ label: "03:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+			{ label: "04:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+			{ label: "05:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+			{ label: "07:00 am", y: [15, 27], name: "cloudy" , icon: "010"}
+		]
+
+    DataArray = {  
+
+            title:{
+                text: "Weekly Weather Forecast"              
+            },
+
+            axisY: {
+                suffix: " °C",
+                maximum: 50,
+                gridThickness: 0
+            },
+
+            toolTip:{
+                shared: true,
+                content: "{name} </br> <strong>Temperature: </strong> </br> Min: {y[0]} °C, Max: {y[1]} °C"
+            },
+
+            data: [{
+                type: "rangeSplineArea",
+                fillOpacity: 0.1,
+                color: "#91AAB1",
+                indexLabelFormatter: formatter,
+                dataPoints: [
+                    { label: "12:00 am", y: [10, 26], name: "rainy" , icon: "010" },
+                    { label: "01:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+                    { label: "02:00 am", y: [15, 27], name: "cloudy" , icon: "010" },
+                    { label: "03:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+                    { label: "04:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "05:00 am", y: [15, 27], name: "sunny" , icon: "010" },
+                    { label: "07:00 am", y: [15, 27], name: "cloudy" , icon: "010" },
+                    { label: "08:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "09:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "10:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "11:00 am", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "12:00 pm", y: [10, 26], name: "rainy" , icon: "010" },
+                    { label: "01:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "02:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "03:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "04:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "05:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "07:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "08:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "09:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "10:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "11:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                    { label: "12:00 pm", y: [15, 27], name: "rainy" , icon: "010" },
+                ],
+            }]
+        }
+
+
+    //CountryDetails
+    function callCountryApi(e){
+        alert("helllo")
+        var xhttp = new XMLHttpRequest()
+        xhttp.onreadystatechange = function() {
+            console.log(e)
+        }
+        xhttp.open("GET", "https://restcountries.eu/rest/v2/name/"+ countryName +"?fullText=true&fields=latlng", true)
+        xhttp.send()
+    }
+
+
+    //Checks Which Button Is Been Pressed
+    function checkButton(e){
+        if (e.keyCode === 13) {  //checks whether the pressed key is "Enter"
+            callCountryApi(e)
+        }
+    }
+</script>	
+</head>
+<body>
+<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>  
+<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+<div style="width: 100%;display: grid;align-items: center;">
+    <div style="width:50%;margin-left: 25%;border-radius: 25px;border: 1px solid black;" id="search">
+        <input style="all: none;border: none;width: 90%;margin: 1%;padding: 1%;" placeholder="Country" id="inputCountry" type="text" onkeypress="checkButton()">
+        <span id="submit" onclick="callCountryApi">&#x1F50D;</span>
+    </div>
+    <span id="countryName" style="font-size: 50px;text-align: center;margin-bottom: 2%;">India</span>
+    </br>
+</div>
+
+<div id="chartContainer" style="height: 300px; width: 100%; position: relative;"></div>
+<div id="toggleWeeklyDaily" onclick="changeDataChart()" style="float: right;margin-top: 5%;">Change Weekly/Daily Chart</div>
+</body>
+</html>
